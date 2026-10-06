@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NetSuite SuiteFoundation — Interactive Coach</title>
+<style>
+:root{--navy:#0f2040;--navy2:#1a3560;--navy3:#243d6b;--orange:#e87722;--orange2:#f5a623;--teal:#00b5ad;--green:#21ba45;--red:#e53e3e;--text:#e8edf5;--dim:#8899b4;--card:rgba(255,255,255,0.06);--border:rgba(255,255,255,0.1)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--navy);color:var(--text);min-height:100vh;display:flex;flex-direction:column}
+.topbar{background:var(--navy2);border-bottom:2px solid var(--orange);padding:10px 20px;display:flex;align-items:center;gap:16px;position:sticky;top:0;z-index:100}
+.tb-cert{font-size:11px;font-weight:700;color:var(--orange);text-transform:uppercase;letter-spacing:.5px;white-space:nowrap}
+.tb-sub{font-size:10px;color:var(--dim);margin-top:1px}
+.tb-progress{flex:1}
+.tb-pbar-bg{background:rgba(255,255,255,0.1);border-radius:3px;height:5px;margin-top:5px}
+.tb-pbar-fill{background:linear-gradient(90deg,var(--orange),var(--orange2));height:5px;border-radius:3px;transition:width .4s}
+.tb-label{font-size:11px;color:var(--dim)}
+.tb-right{text-align:right;white-space:nowrap}
+.tb-concept{font-size:12px;font-weight:700;color:var(--text)}
+.tb-page{font-size:11px;color:var(--dim)}
+.save-pill{font-size:10px;padding:3px 8px;border-radius:10px;background:rgba(33,186,69,.15);border:1px solid rgba(33,186,69,.3);color:var(--green);white-space:nowrap;transition:opacity .4s}
+.save-pill.hidden{opacity:0}
+.page-badge{display:inline-flex;align-items:center;gap:8px;padding:5px 14px;border-radius:20px;font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;margin-bottom:20px}
+.badge-learn{background:rgba(0,181,173,.15);border:1px solid rgba(0,181,173,.4);color:var(--teal)}
+.badge-do{background:rgba(232,119,34,.15);border:1px solid rgba(232,119,34,.4);color:var(--orange2)}
+.badge-quiz{background:rgba(33,186,69,.15);border:1px solid rgba(33,186,69,.4);color:var(--green)}
+.badge-dot{width:7px;height:7px;border-radius:50%;background:currentColor}
+.main{flex:1;padding:28px 20px 100px;max-width:780px;margin:0 auto;width:100%}
+.concept-meta{font-size:11px;color:var(--dim);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px}
+h1{font-size:26px;font-weight:700;line-height:1.2;margin-bottom:6px}
+h1 span{color:var(--orange)}
+.concept-num-badge{font-size:12px;color:var(--dim);margin-bottom:16px}
+.learn-headline{font-size:20px;font-weight:700;color:var(--text);line-height:1.4;margin-bottom:16px;padding:20px;background:var(--card);border:1px solid var(--border);border-left:3px solid var(--teal);border-radius:10px}
+.learn-body{font-size:15px;color:var(--dim);line-height:1.75;margin-bottom:20px}
+.learn-body strong{color:var(--text)}
+.key-points{list-style:none;margin:16px 0}
+.key-points li{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:14px;color:var(--dim)}
+.key-points li:last-child{border-bottom:none}
+.key-points li::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--orange);flex-shrink:0;margin-top:6px}
+.key-points li strong{color:var(--text)}
+.exam-fact{background:rgba(232,119,34,.1);border:1px solid rgba(232,119,34,.3);border-radius:8px;padding:14px 16px;margin-top:20px;font-size:14px;color:var(--orange2);line-height:1.6}
+.exam-fact b{color:var(--orange);font-size:11px;font-weight:800;display:block;letter-spacing:.5px;text-transform:uppercase;margin-bottom:4px}
+.do-intro{font-size:16px;color:var(--text);margin-bottom:24px;line-height:1.6;padding:16px;background:rgba(232,119,34,.08);border-radius:8px;border-left:3px solid var(--orange)}
+.step-list{list-style:none}
+.step-item{display:flex;gap:14px;padding:14px 0;border-bottom:1px solid rgba(255,255,255,.05);cursor:pointer;transition:opacity .2s;align-items:flex-start}
+.step-item:last-child{border-bottom:none}
+.step-item.done{opacity:.5}
+.step-check{width:24px;height:24px;border:2px solid var(--border);border-radius:6px;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .2s;margin-top:1px}
+.step-item.done .step-check{background:var(--green);border-color:var(--green)}
+.step-tick{font-size:13px;color:white;display:none}
+.step-item.done .step-tick{display:block}
+.step-num{width:24px;height:24px;border-radius:50%;background:var(--navy3);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--orange);margin-top:1px}
+.step-content{flex:1}
+.step-title{font-size:14px;font-weight:600;color:var(--text);margin-bottom:3px}
+.step-detail{font-size:13px;color:var(--dim);line-height:1.5}
+.step-path{font-family:'SF Mono',Consolas,monospace;font-size:12px;color:var(--teal);background:rgba(0,181,173,.08);border:1px solid rgba(0,181,173,.2);border-radius:4px;padding:4px 8px;margin-top:5px;display:inline-block}
+.do-gate{margin-top:20px;padding:14px 16px;border-radius:8px;font-size:14px;font-weight:600;background:rgba(255,255,255,.04);border:1px solid var(--border);color:var(--dim);text-align:center;transition:all .3s}
+.do-gate.unlocked{background:rgba(33,186,69,.1);border-color:rgba(33,186,69,.3);color:var(--green)}
+/* QUIZ */
+.quiz-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.quiz-step-pills{display:flex;gap:6px}
+.qpill{width:28px;height:28px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--dim);transition:all .2s}
+.qpill.active{border-color:var(--green);color:var(--green)}
+.qpill.passed{background:var(--green);border-color:var(--green);color:white}
+.quiz-progress-label{font-size:12px;color:var(--dim)}
+.quiz-q{font-size:17px;font-weight:700;color:var(--text);line-height:1.5;margin-bottom:20px;padding:18px;background:var(--card);border:1px solid var(--border);border-radius:10px}
+.quiz-options{display:flex;flex-direction:column;gap:10px}
+.quiz-opt{padding:14px 18px;border:2px solid var(--border);border-radius:10px;cursor:pointer;font-size:14px;color:var(--dim);transition:all .2s;display:flex;align-items:center;gap:12px;background:var(--card)}
+.quiz-opt:hover:not(.locked){border-color:rgba(255,255,255,.3);color:var(--text);transform:translateX(3px)}
+.quiz-opt.locked{cursor:default}
+.quiz-opt.correct{border-color:var(--green);background:rgba(33,186,69,.12);color:var(--text)}
+.quiz-opt.wrong{border-color:var(--red);background:rgba(229,62,62,.1);color:var(--text)}
+.opt-letter{width:28px;height:28px;border-radius:50%;background:var(--navy3);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--orange);flex-shrink:0;transition:all .2s}
+.quiz-opt.correct .opt-letter{background:var(--green);color:white}
+.quiz-opt.wrong .opt-letter{background:var(--red);color:white}
+.quiz-feedback{margin-top:16px;padding:14px 16px;border-radius:8px;font-size:14px;line-height:1.6;display:none}
+.quiz-feedback.show{display:block}
+.fb-wrong{background:rgba(229,62,62,.1);border:1px solid rgba(229,62,62,.3);color:#fc8181}
+.fb-right{background:rgba(33,186,69,.1);border:1px solid rgba(33,186,69,.3);color:#68d391}
+.fb-title{font-weight:800;font-size:11px;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.next-q-btn{margin-top:14px;padding:10px 20px;background:var(--teal);color:white;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;display:none}
+.next-q-btn.show{display:inline-block}
+.next-q-btn:hover{opacity:.85}
+.botnav{position:fixed;bottom:0;left:0;right:0;background:var(--navy2);border-top:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.btn{padding:10px 22px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+.btn-primary{background:var(--orange);color:white}
+.btn-primary:hover:not(:disabled){background:var(--orange2)}
+.btn-secondary{background:var(--card);border:1px solid var(--border);color:var(--dim)}
+.btn-secondary:hover:not(:disabled){border-color:var(--orange);color:var(--text)}
+.btn:disabled{opacity:.3;cursor:not-allowed}
+.botnav-mid{font-size:12px;color:var(--dim);text-align:center}
+.botnav-mid span{display:block}
+.info-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:13px}
+.info-table th{text-align:left;font-size:10px;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:.5px;padding:8px 10px;border-bottom:1px solid var(--border)}
+.info-table td{padding:9px 10px;border-bottom:1px solid rgba(255,255,255,.04);color:var(--dim);vertical-align:top}
+.info-table td:first-child{color:var(--text);font-weight:600;width:38%}
+.info-table tr:last-child td{border-bottom:none}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div>
+    <div class="tb-cert">SuiteFoundation Coach</div>
+    <div class="tb-sub">Cert 1 of 3</div>
+  </div>
+  <div class="tb-progress">
+    <div class="tb-label" id="tbLabel">Concept 1 of 21</div>
+    <div class="tb-pbar-bg"><div class="tb-pbar-fill" id="tbFill" style="width:0%"></div></div>
+  </div>
+  <div class="save-pill hidden" id="savePill">✓ Saved</div>
+  <div class="tb-right">
+    <div class="tb-concept" id="tbConcept"></div>
+    <div class="tb-page" id="tbPage"></div>
+  </div>
+</div>
+
+<div class="main" id="mainArea"></div>
+
+<div class="botnav">
+  <button class="btn btn-secondary" id="btnPrev" onclick="nav(-1)" disabled>← Back</button>
+  <div class="botnav-mid">
+    <span id="botLabel"></span>
+    <span id="botSub" style="color:var(--teal);font-size:11px"></span>
+  </div>
+  <button class="btn btn-primary" id="btnNext" onclick="nav(1)">Next →</button>
+</div>
+
+<script>
+// ─── DATA ───────────────────────────────────────────────────────────
+const C=[
+  {type:'deep',cat:'Core Mechanics',title:'What is a Record?',
+   learn:{
+     headline:'A record is a single row in the NetSuite database. Every screen you open IS a record.',
+     body:'When you view a customer, you\'re looking at a <strong>Customer record</strong>. An invoice is an <strong>Invoice record</strong>. An employee profile is an <strong>Employee record</strong>. NetSuite is a database with a nice interface — and everything in that database is a record.',
+     points:['<strong>Entity records</strong> — people/orgs: Customer, Vendor, Employee, Partner','<strong>Transaction records</strong> — financial events: Sales Order, Invoice, PO, Journal Entry','<strong>Item records</strong> — products/services: Inventory Item, Service Item, Kit','<strong>Custom records</strong> — anything you create: Projects, Contracts, etc.'],
+     examFact:'Transactions (Sales Orders, Invoices) are a SUBTYPE of records — not a separate concept. A Sales Order IS a record. The exam will test this boundary.'
+   },
+   do:{intro:'Open your NetSuite sandbox. Find a Customer record and identify what you\'re looking at.',
+     steps:[
+       {title:'Open the Lists menu',detail:'Click <strong>Lists</strong> in the top navigation bar.',path:'Lists → Relationships → Customers'},
+       {title:'Open any Customer record',detail:'Click on a customer name. Look at the URL — you\'ll see <code style="color:var(--teal)">?e=entity&id=...</code>'},
+       {title:'Identify 3 body fields',detail:'In the main section of the form find: Company Name, Email, Phone. These are single-value fields — one value per record.'},
+       {title:'Find the Address sublist',detail:'Click the <strong>Address</strong> subtab. This table of rows is a sublist — multiple rows on the same record.'},
+       {title:'Compare to an Invoice URL',detail:'Open Transactions → Sales → Create Invoices → any invoice. Compare the URL to your Customer record URL. Both are records — different types, same concept.'}
+     ]
+   },
+   quiz:{questions:[
+     {q:'Which of the following is NOT a record type in NetSuite?',opts:[
+       {t:'Customer',c:false,h:'Customer IS a record type — an entity record.'},
+       {t:'Invoice',c:false,h:'Invoice IS a record type — a transaction record.'},
+       {t:'Permission Level',c:true,e:'Correct! Permission levels (None, View, Create, Edit, Full) are settings inside a Role — not records themselves. They don\'t exist as rows in the database.'},
+       {t:'Employee',c:false,h:'Employee IS a record type — an entity record.'}
+     ]},
+     {q:'A Customer record and a Sales Order are both records. What is the key difference between them?',opts:[
+       {t:'Sales Orders are not stored in the database',c:false,h:'All records — including Sales Orders — are stored in the database. That\'s what makes them records.'},
+       {t:'Customer records are entity records; Sales Orders are transaction records representing an event in time',c:true,e:'Correct! Entity records (Customers, Vendors) represent persistent things that exist over time. Transaction records (Sales Orders, Invoices) represent events that happened at a specific date and time.'},
+       {t:'Customer records have more fields than Sales Orders',c:false,h:'The number of fields has nothing to do with the record type distinction. Both can have many or few fields.'},
+       {t:'Only Sales Orders can be customised',c:false,h:'Both entity records and transaction records can be customised with custom fields and forms.'}
+     ]},
+     {q:'A company needs to store information about internal "Projects" — each with a name, budget, and assigned team. No standard NetSuite record type fits. What should they create?',opts:[
+       {t:'A Custom Field on the Customer record',c:false,h:'A Custom Field adds one piece of data to an existing record type — it doesn\'t create a new kind of record for Projects.'},
+       {t:'A Custom Record Type',c:true,e:'Correct! When no standard record type fits, you create a Custom Record Type. This gives you a brand new record with its own fields, forms, and permissions — perfect for Projects.'},
+       {t:'A Custom Form on the Sales Order',c:false,h:'A Custom Form changes the layout of an existing record — it doesn\'t create a new record type.'},
+       {t:'A Saved Search',c:false,h:'A Saved Search queries existing records — it doesn\'t store new types of information.'}
+     ]}
+   ]}
+  },
+  {type:'deep',cat:'Core Mechanics',title:'What is a Field?',
+   learn:{
+     headline:'A field is a single piece of data on a record — like a column in a spreadsheet.',
+     body:'On a Customer record, <strong>Company Name</strong> is a field. <strong>Email</strong> is a field. <strong>Status</strong> is a field. Fields come in two locations: <strong>body fields</strong> (on the main form — one value per record) and <strong>sublist fields</strong> (columns inside a table on the record — multiple rows allowed).',
+     points:['<strong>Body field</strong> — appears once on the main form. "Customer Name" is a body field. One value.','<strong>Sublist field</strong> — a column inside a table on the record. "Line Item Quantity" on a Sales Order is a sublist field.','<strong>Standard fields</strong> — built into NetSuite (cannot be deleted)','<strong>Custom fields</strong> — fields you add via Customisation → Fields'],
+     examFact:'The exam says "a field that appears once per record" — that\'s a body field. "A field that can appear on multiple lines" — that\'s a sublist field. Know this cold.'
+   },
+   do:{intro:'Look at both a body field and a sublist field on the same record.',
+     steps:[
+       {title:'Open a Sales Order',path:'Transactions → Sales → Enter Sales Orders → [any order]'},
+       {title:'Identify 3 body fields',detail:'In the top section: <strong>Customer</strong>, <strong>Date</strong>, <strong>Status</strong>. These appear once — they\'re body fields.'},
+       {title:'Find the Items sublist',detail:'Scroll down. Click the <strong>Items</strong> subtab. Each row is one line item. <strong>Quantity</strong> on each row is a sublist field — it exists per line, not per record.'},
+       {title:'Count the difference',detail:'The Sales Order has ONE customer (body field) but can have MANY line items (sublist). That\'s the fundamental difference.'},
+       {title:'See the custom fields area',path:'Customisation → Lists, Records & Fields → Transaction Body Fields'}
+     ]
+   },
+   quiz:{questions:[
+     {q:'A Sales Order has 5 line items. The "Unit Price" on each line item is an example of a...',opts:[
+       {t:'Body field',c:false,h:'Body fields appear ONCE per record. Unit Price appears once per LINE — there could be 5 different unit prices on the same Sales Order.'},
+       {t:'Sublist field',c:true,e:'Correct! Unit Price lives inside the Items sublist — it\'s a column in that table. Each line item row has its own Unit Price. That\'s exactly what a sublist field is.'},
+       {t:'Custom record',c:false,h:'A custom record is an entirely new record type. Unit Price is a field, not a record.'},
+       {t:'Transaction type',c:false,h:'A transaction type is the category of record (Sales Order, Invoice, etc.) — not a field on it.'}
+     ]},
+     {q:'Which of these is a body field on a Sales Order?',opts:[
+       {t:'Line item description',c:false,h:'Line item description is a column in the Items sublist — it exists once per line, not once per Sales Order.'},
+       {t:'Customer',c:true,e:'Correct! The Customer field appears once on the main form — one customer per Sales Order. That makes it a body field. It can\'t appear on multiple rows.'},
+       {t:'Item quantity',c:false,h:'Item quantity is a column in the Items sublist — each line item has its own quantity.'},
+       {t:'Line item amount',c:false,h:'Line item amount is a column in the Items sublist — each line has its own amount.'}
+     ]},
+     {q:'A Sales Order has 8 line items but is only for one customer. Where is the "Customer" field located on this record?',opts:[
+       {t:'In the Items sublist, repeated 8 times',c:false,h:'The Items sublist contains item-level data (quantity, price, description). The customer is not repeated per line — it belongs to the whole record.'},
+       {t:'In the body of the form, appearing once',c:true,e:'Correct! The Customer is a body field — it appears once at the top of the Sales Order form and applies to the whole record, regardless of how many line items there are.'},
+       {t:'In a custom sublist created for this record',c:false,h:'The Customer field is a standard body field — it\'s built into NetSuite and doesn\'t require a custom sublist.'},
+       {t:'Customer is not stored on a Sales Order',c:false,h:'Every Sales Order has a Customer field — it\'s one of the most fundamental fields on a sales transaction.'}
+     ]}
+   ]}
+  },
+  {type:'deep',cat:'Core Mechanics',title:'Field Types',
+   learn:{
+     headline:'NetSuite has 11 field types. Each controls what data can be entered and how it\'s stored.',
+     body:'When you create a custom field, you choose a type. The type determines the UI control (text box, dropdown, tick box) and validation rules. The exam expects you to know all 11 and when to use each.',
+     points:['<strong>Free Form Text</strong> — plain text, no validation','<strong>List/Record</strong> — dropdown pulling from another list or record type','<strong>Currency</strong> — monetary value, respects subsidiary currency','<strong>Decimal Number</strong> — numeric, allows decimals, non-monetary','<strong>Integer</strong> — whole numbers only','<strong>Checkbox</strong> — true/false toggle','<strong>Date / Date+Time</strong> — calendar picker','<strong>Hyperlink</strong> — a URL that opens in the browser','<strong>Inline HTML</strong> — renders formatted HTML in the field','<strong>Phone Number</strong> — text with phone formatting','<strong>Rich Text</strong> — WYSIWYG formatted text editor'],
+     examFact:'List/Record is the most exam-tested field type. "A dropdown that pulls values from another record" = List/Record. If the question says "linked data" or "reference to another record" — always List/Record.'
+   },
+   do:{intro:'Navigate to the field creation screen and look at the full type dropdown.',
+     steps:[
+       {title:'Go to Custom Fields',path:'Customisation → Lists, Records & Fields → Transaction Body Fields'},
+       {title:'Click New',detail:'Click the <strong>New Transaction Body Field</strong> button.'},
+       {title:'Open the Type dropdown',detail:'Find the <strong>Type</strong> dropdown. Click it and look through ALL the options. Read each one — don\'t select yet.'},
+       {title:'Select List/Record and see what changes',detail:'Select <strong>List/Record</strong>. A new field appears asking WHICH list or record to pull from. This is the linked-data behaviour.'},
+       {title:'Cancel without saving',detail:'Press Cancel. You don\'t need to save — this was just to see the types in context.'}
+     ]
+   },
+   quiz:{questions:[
+     {q:'You need a field on Customer that stores which Sales Rep "owns" that customer, linked to the Employee record. Which field type?',opts:[
+       {t:'Free Form Text',c:false,h:'Free Form Text is unvalidated text — anyone could type anything. It wouldn\'t create a proper link to the Employee record.'},
+       {t:'List/Record',c:true,e:'Correct! List/Record creates a dropdown populated from another record type. You\'d choose "Employee" as the source — giving a validated dropdown of actual employees.'},
+       {t:'Inline HTML',c:false,h:'Inline HTML renders formatted HTML content — it\'s for display, not for linking to another record.'},
+       {t:'Integer',c:false,h:'Integer is for whole numbers. It wouldn\'t link to an Employee record.'}
+     ]},
+     {q:'A field needs to store a yes/no value — either a customer has signed an NDA or they haven\'t. Which field type?',opts:[
+       {t:'Free Form Text',c:false,h:'Free Form Text allows any text — someone could type "maybe" or leave it blank. Not appropriate for a strict yes/no value.'},
+       {t:'Integer',c:false,h:'Integer stores whole numbers (0, 1, 2...) — not designed for a true/false toggle.'},
+       {t:'Checkbox',c:true,e:'Correct! A Checkbox field stores a true/false (yes/no) value — it renders as a tick box. Ticked = yes, unticked = no. Perfect for a binary NDA status.'},
+       {t:'List/Record',c:false,h:'List/Record pulls values from another list or record. For a simple yes/no you don\'t need to reference another record.'}
+     ]},
+     {q:'A Decimal Number field and a Currency field both store numbers. What is the key difference between them?',opts:[
+       {t:'Decimal Number allows more decimal places',c:false,h:'Both field types support decimal places. That\'s not the distinction.'},
+       {t:'Currency fields respect the subsidiary\'s base currency and exchange rates',c:true,e:'Correct! Currency fields are "currency-aware" — they display the appropriate currency symbol, apply exchange rates in multi-currency setups, and respect the subsidiary\'s base currency. Decimal fields are just plain numbers with no currency logic.'},
+       {t:'Only Currency fields can be used in Saved Searches',c:false,h:'Both field types can be used in Saved Searches and reports.'},
+       {t:'Decimal Number fields cannot be negative',c:false,h:'Decimal Number fields can absolutely store negative values.'}
+     ]}
+   ]}
+  },
+  {type:'deep',cat:'Core Mechanics',title:'Sublist Types',
+   learn:{
+     headline:'There are 3 sublist types. The type controls how users interact with the rows inside it.',
+     body:'Not all sublists work the same way. NetSuite has three distinct types, and the exam will ask you to identify which type is appropriate for a given scenario.',
+     points:['<strong>Static sublist</strong> — rows are linked records that exist independently. Clicking "Add" opens the linked record in a separate screen. Example: Contacts sublist on a Customer.','<strong>Dynamic sublist</strong> — rows are entered directly on the parent record in real time. Most common type. Example: line items on a Sales Order.','<strong>Inline Editor sublist</strong> — like Dynamic but all rows show as a fully editable grid — great for bulk editing. Example: editing multiple inventory quantities at once.'],
+     examFact:'"Which sublist allows adding rows without opening a separate screen?" = Dynamic. "Which allows bulk editing multiple rows simultaneously in a grid?" = Inline Editor. "Which opens rows as independent records?" = Static.'
+   },
+   do:{intro:'Find a real example of Static and Dynamic on the same Customer record.',
+     steps:[
+       {title:'Open any Customer record',path:'Lists → Relationships → Customers → [any customer]'},
+       {title:'Find the Contacts sublist (Static)',detail:'Click the <strong>Contacts</strong> subtab. Rows here are Contact records — clicking one opens a separate Contact record. This is a <strong>Static sublist</strong>.'},
+       {title:'Open a Sales Order',path:'Transactions → Sales → Enter Sales Orders → [any order]'},
+       {title:'Find the Items sublist (Dynamic)',detail:'Click the <strong>Items</strong> subtab. You can add a new row right here on the form without leaving the Sales Order. This is a <strong>Dynamic sublist</strong>.'},
+       {title:'Remember the distinction',detail:'Static = rows open separately as independent records. Dynamic = rows created inline on the parent.'}
+     ]
+   },
+   quiz:{questions:[
+     {q:'A warehouse manager needs to update the "Bin Location" on 50 inventory items simultaneously in a grid view. Which sublist type?',opts:[
+       {t:'Static',c:false,h:'Static sublists open each row as a separate record — you\'d need 50 clicks to update 50 records. Not a grid.'},
+       {t:'Dynamic',c:false,h:'Dynamic allows inline row entry but it\'s not a bulk-grid view.'},
+       {t:'Inline Editor',c:true,e:'Correct! Inline Editor shows all rows as a simultaneously editable grid — perfect for bulk updates like changing 50 bin locations at once.'},
+       {t:'Formula',c:false,h:'"Formula" is not a sublist type — it\'s available in Saved Search columns, not sublists.'}
+     ]},
+     {q:'On a Customer record, the Notes sublist shows existing notes that each open as separate records when clicked. This is a...',opts:[
+       {t:'Static sublist',c:true,e:'Correct! Static sublists contain rows that are independent records in their own right — clicking a row opens that record in its own screen. The Notes sublist behaves exactly this way.'},
+       {t:'Dynamic sublist',c:false,h:'Dynamic sublists let you add rows inline without leaving the parent record. Opening rows as separate screens is the Static behaviour.'},
+       {t:'Inline Editor sublist',c:false,h:'Inline Editor is a bulk-edit grid — all rows are editable simultaneously. That\'s different from rows that open as independent records.'},
+       {t:'Formula sublist',c:false,h:'"Formula sublist" is not a real NetSuite concept.'}
+     ]},
+     {q:'A user adds 5 line items to a Sales Order without ever navigating away from the Sales Order form. Which sublist type is the Items sublist?',opts:[
+       {t:'Static',c:false,h:'Static sublists require navigating to a separate record screen to add rows. That\'s not what happened here — the user stayed on the Sales Order.'},
+       {t:'Dynamic',c:true,e:'Correct! Dynamic sublists let users add rows directly on the parent record in real time — no separate screen needed. The Items sublist on a Sales Order is the classic example.'},
+       {t:'Inline Editor',c:false,h:'Inline Editor is also inline, but it\'s specifically a full-grid bulk-edit view. The standard Items sublist is Dynamic.'},
+       {t:'Custom',c:false,h:'"Custom" is not a sublist type in NetSuite\'s standard classification.'}
+     ]}
+   ]}
+  },
+  {type:'deep',cat:'Core Mechanics',title:'Transaction Records',
+   learn:{
+     headline:'Transactions are records that represent financial events. They always have a date, an amount, and a status.',
+     body:'Every time money moves — or is planned to move — that\'s a transaction. Sales Orders, Invoices, Purchase Orders, and Payments are all transaction records. They differ from entity records because they represent an <strong>event in time</strong>, not a persistent entity.',
+     points:['<strong>Sales Order</strong> — commitment to sell. Non-posting (no GL impact).','<strong>Invoice</strong> — demand for payment. Posting (hits the General Ledger).','<strong>Purchase Order</strong> — commitment to buy from a vendor. Non-posting.','<strong>Vendor Bill</strong> — vendor\'s charge to you. Posting (hits Accounts Payable).','<strong>Journal Entry</strong> — direct accounting debit/credit entry.','<strong>Customer Payment</strong> — records money received. Closes the Invoice.','<strong>Item Receipt</strong> — records physical goods received. Increases inventory.'],
+     examFact:'"Which transaction posts to the General Ledger?" Sales Orders do NOT post — they\'re commitments. Invoices DO post. The exam tests this with questions like "which transaction affects Accounts Receivable?"'
+   },
+   do:{intro:'Trace a simple transaction chain in your sandbox.',
+     steps:[
+       {title:'Find the Transactions menu',detail:'Click <strong>Transactions</strong> in the top nav. See the sub-menus: Sales, Purchases, Financial, Customers, Vendors.'},
+       {title:'Open a Sales Order',path:'Transactions → Sales → Enter Sales Orders → [any]'},
+       {title:'Note the Status field',detail:'Find <strong>Status</strong> (top-right area). It might say "Pending Fulfillment" or "Pending Billing". This tells you where in the process it is.'},
+       {title:'Look for a linked Invoice',detail:'Scroll down to the <strong>Billing</strong> subtab. If billed, there will be a linked Invoice record here.'},
+       {title:'Open a Journal Entry',path:'Transactions → Financial → Make Journal Entries → [any]'},
+       {title:'Compare',detail:'Notice the Journal Entry has explicit Debit and Credit columns — a direct accounting entry. Very different from a Sales Order.'}
+     ]
+   },
+   quiz:{questions:[
+     {q:'A company creates a Sales Order for a customer. At this point, does anything get posted to the General Ledger?',opts:[
+       {t:'Yes — revenue is recognised immediately',c:false,h:'Revenue recognition happens at Invoice (or delivery), not at Sales Order.'},
+       {t:'Yes — it debits Accounts Receivable',c:false,h:'Accounts Receivable is debited when an Invoice is created, not a Sales Order.'},
+       {t:'No — a Sales Order is a commitment, not an accounting entry',c:true,e:'Correct! Sales Orders are non-posting transactions — they represent a commitment to sell but don\'t affect the General Ledger. The Invoice that follows IS a posting transaction.'},
+       {t:'No — only Journal Entries affect the GL',c:false,h:'Many transaction types post to the GL — Invoices, Bills, Payments. It\'s not only Journal Entries. But Sales Orders specifically are non-posting.'}
+     ]},
+     {q:'Which transaction in NetSuite DIRECTLY creates an Accounts Receivable entry (i.e. posts to the GL)?',opts:[
+       {t:'Sales Order',c:false,h:'Sales Orders are non-posting — they don\'t touch the General Ledger or Accounts Receivable at the time of creation.'},
+       {t:'Invoice',c:true,e:'Correct! When an Invoice is created (or "billed"), NetSuite posts a debit to Accounts Receivable and a credit to the Revenue account. This is the posting transaction in the order-to-cash flow.'},
+       {t:'Quote/Estimate',c:false,h:'Quotes/Estimates are pre-sales documents — they have no accounting impact.'},
+       {t:'Item Fulfillment',c:false,h:'Item Fulfillment records the physical shipment of goods — in standard accounting it may trigger COGS, but not the Accounts Receivable entry. That\'s the Invoice.'}
+     ]},
+     {q:'Which transaction records the physical arrival of goods from a vendor and increases inventory quantity on hand?',opts:[
+       {t:'Vendor Bill',c:false,h:'A Vendor Bill records the vendor\'s charge and creates an Accounts Payable entry. It doesn\'t record physical goods arrival.'},
+       {t:'Purchase Order',c:false,h:'A Purchase Order is the commitment to buy — created before goods arrive. It doesn\'t record receipt.'},
+       {t:'Item Receipt',c:true,e:'Correct! Item Receipt records that physical goods have arrived at the warehouse and automatically increases inventory quantity on hand. It\'s linked to the originating Purchase Order.'},
+       {t:'Vendor Payment',c:false,h:'Vendor Payment records money sent to the vendor — it comes last, after the Bill has been created and approved.'}
+     ]}
+   ]}
+  },
+  {type:'deep',cat:'Core Mechanics',title:'Entity Records & Item Types',
+   learn:{
+     headline:'Entity records represent people and organisations. Item records represent products and services.',
+     body:'Two fundamental record categories. Entity records persist over time. Item records define what you sell or buy.',
+     points:['<strong>Entity records:</strong> Customer, Vendor, Employee, Partner, Contact','<strong>Inventory Item</strong> — physical goods tracked in stock. Has quantity on hand.','<strong>Non-Inventory Item</strong> — physical goods NOT tracked in stock.','<strong>Service Item</strong> — labour, consulting, subscriptions. Non-physical.','<strong>Kit/Assembly Item</strong> — a bundle of multiple items sold as one SKU.','<strong>Description Item</strong> — text-only line on a transaction. No price or quantity.','<strong>Discount Item</strong> — applies a discount line to a transaction.'],
+     examFact:'"Cloud software subscription, no warehouse" = Service Item. "Physical goods tracked in stock" = Inventory Item. "Physical goods NOT tracked" = Non-Inventory Item. "Multiple items bundled as one SKU" = Kit/Assembly.'
+   },
+   do:{intro:'Browse entity and item records in your sandbox.',
+     steps:[
+       {title:'View entity records',path:'Lists → Relationships → Customers | Lists → Relationships → Vendors'},
+       {title:'Open any Customer',detail:'Notice: no quantity, no price. This is a permanent entity — a who, not a what.'},
+       {title:'Navigate to Items',path:'Lists → Accounting → Items'},
+       {title:'Find the Type column',detail:'In the Items list, find the <strong>Type</strong> column. Look for: Inventory Item, Service Item, Non-Inventory Item.'},
+       {title:'Open one of each',detail:'Click an Inventory Item — notice <strong>Quantity on Hand</strong> and <strong>Location</strong> fields. Then open a Service Item — those fields don\'t exist.'}
+     ]
+   },
+   quiz:{questions:[
+     {q:'A company sells cloud software licences — no physical product, no stock to track. What item type?',opts:[
+       {t:'Inventory Item',c:false,h:'Inventory Items are for physical goods tracked in stock with quantities. A software licence doesn\'t sit in a warehouse.'},
+       {t:'Non-Inventory Item',c:false,h:'Non-Inventory Items are for physical goods you DON\'T track in stock. Cloud software isn\'t physical at all.'},
+       {t:'Service Item',c:true,e:'Correct! Service Items are for non-physical deliverables — licences, subscriptions, consulting, labour. No warehouse, no quantity tracking.'},
+       {t:'Kit/Assembly Item',c:false,h:'Kit/Assembly Items are bundles of multiple items sold together as one SKU.'}
+     ]},
+     {q:'A company sells a "Starter Kit" that bundles a laptop, mouse, and keyboard as a single purchasable product. Which item type?',opts:[
+       {t:'Inventory Item',c:false,h:'An Inventory Item represents a single product. The Starter Kit combines multiple products — that\'s a different type.'},
+       {t:'Service Item',c:false,h:'Service Items are for non-physical deliverables. The Starter Kit contains physical hardware.'},
+       {t:'Non-Inventory Item',c:false,h:'Non-Inventory Items are individual physical products not tracked in stock — not bundles.'},
+       {t:'Kit/Assembly Item',c:true,e:'Correct! Kit/Assembly Items represent bundles of multiple component items sold together as one SKU. The customer sees one item; NetSuite knows it\'s made up of a laptop, mouse, and keyboard.'}
+     ]},
+     {q:'Which item type has a "Quantity on Hand" field and tracks physical stock levels?',opts:[
+       {t:'Service Item',c:false,h:'Service Items don\'t have physical stock — no Quantity on Hand field.'},
+       {t:'Non-Inventory Item',c:false,h:'Non-Inventory Items are physical but are explicitly NOT tracked in stock — so no Quantity on Hand.'},
+       {t:'Inventory Item',c:true,e:'Correct! Inventory Items are the only type that tracks physical stock quantities. They have Quantity on Hand, bin management, reorder points, and location fields.'},
+       {t:'Description Item',c:false,h:'Description Items are text-only lines on transactions — they have no price, quantity, or stock tracking at all.'}
+     ]}
+   ]}
+  },
+  {type:'deep',cat:'Roles & Permissions',title:'Permission Levels',
+   learn:{
+     headline:'There are 5 permission levels. Each level includes everything the one below it allows.',
+     body:'Every permission on a role has a level. The level determines what the user can do with that feature. They build on each other — Edit includes Create, which includes View.',
+     points:['<strong>None</strong> — the feature doesn\'t appear in their UI at all','<strong>View</strong> — can open and read records. Cannot create or change anything.','<strong>Create</strong> — can create new records. Cannot edit records that already exist.','<strong>Edit</strong> — can view and edit existing records. Cannot delete.','<strong>Full</strong> — view, create, edit, AND delete. Maximum access.'],
+     examFact:'Match the scenario to the MINIMUM level needed. "See but not touch" = View. "Submit but not change after" = Create. "Manage but not delete" = Edit. "Full control" = Full.'
+   },
+   do:{intro:'Open a Role record and see all 5 permission levels in action.',
+     steps:[
+       {title:'Navigate to Manage Roles',path:'Setup → Users/Roles → Manage Roles'},
+       {title:'Open the Sales Person role',detail:'Find <strong>Sales Person</strong> and click to open.'},
+       {title:'Click the Permissions tab',detail:'Click <strong>Permissions</strong>. You\'ll see Feature | Level columns.'},
+       {title:'Find the Transactions subtab',detail:'Click <strong>Transactions</strong> inside Permissions. Scan the Level column — find View, Create, Edit, and Full examples.'},
+       {title:'Check the Setup subtab',detail:'Click <strong>Setup</strong>. Most setup features show No Access (None) for Sales Person — admin features hidden from non-admins.'}
+     ]
+   },
+   quiz:{questions:[
+     {q:'A user needs to create Purchase Orders but should NEVER change a PO after it\'s been created. Which level?',opts:[
+       {t:'View',c:false,h:'View only allows reading existing records — the user wouldn\'t be able to CREATE a PO at all.'},
+       {t:'Create',c:true,e:'Correct! Create allows creating new records but NOT editing records that already exist. Once the PO is saved, they can\'t go back and change it.'},
+       {t:'Edit',c:false,h:'Edit allows both creating AND editing existing records — that\'s more than required.'},
+       {t:'Full',c:false,h:'Full adds the ability to delete on top of Edit — way too much access here.'}
+     ]},
+     {q:'Which is the ONLY permission level that allows a user to delete records?',opts:[
+       {t:'Edit',c:false,h:'Edit allows creating and modifying but NOT deleting. Users with Edit permission cannot delete records.'},
+       {t:'Create',c:false,h:'Create only allows adding new records — not editing or deleting existing ones.'},
+       {t:'Full',c:true,e:'Correct! Full is the only permission level that includes deletion. None, View, Create, and Edit all exclude the ability to delete. If you need to prevent deletion, don\'t grant Full.'},
+       {t:'Administrator',c:false,h:'Administrator is a role, not a permission level. The 5 levels are: None, View, Create, Edit, Full.'}
+     ]},
+     {q:'A user has Edit permission on Customers. They try to delete a customer record. What happens?',opts:[
+       {t:'The record is deleted successfully',c:false,h:'Edit does not include delete. Only the Full permission level allows deletion.'},
+       {t:'NetSuite asks them to confirm the deletion',c:false,h:'NetSuite does ask for confirmation — but only when the user actually HAS permission to delete. Edit permission doesn\'t include deletion at all.'},
+       {t:'They cannot delete — Edit permission doesn\'t include deletion',c:true,e:'Correct! Edit permission allows viewing, creating, and modifying records — but NOT deleting them. The delete option won\'t even appear (or will be greyed out) for a user with only Edit access.'},
+       {t:'They need to contact their admin to upgrade to Full first',c:false,h:'While technically true that an admin could upgrade them, this isn\'t what the question is testing. The key answer is that Edit simply doesn\'t include delete.'}
+     ]}
+   ]}
+  },
+  {type:'deep',cat:'Roles & Permissions',title:'Permission Categories & Roles',
+   learn:{
+     headline:'Every role has 4 permission categories. Roles bundle permissions together and are assigned to users.',
+     body:'A <strong>Role</strong> is a bundle of permissions. The role\'s Permissions tab has 4 subtabs — one for each category of features. You need to know which category each feature type lives in.',
+     points:['<strong>Transactions tab</strong> — Sales Orders, Invoices, POs, Journal Entries, Payments','<strong>Lists tab</strong> — Customer, Vendor, Item, Employee records; custom lists','<strong>Reports tab</strong> — Financial statements, Saved Searches, KPI scorecards','<strong>Setup tab</strong> — Company settings, Users, Customisation, Scripting'],
+     examFact:'"Access to create Sales Orders" = Transactions tab. "Access to view customer records" = Lists tab. "Access to financial statements" = Reports tab. "Access to customise forms" = Setup tab.'
+   },
+   do:{intro:'Compare two standard roles to understand permission category structure.',
+     steps:[
+       {title:'Open the Accountant role',path:'Setup → Users/Roles → Manage Roles → Accountant'},
+       {title:'Permissions → Transactions',detail:'Journal Entries should be Edit or Full — accountants need to post entries.'},
+       {title:'Click the Lists tab',detail:'Customer and vendor record access. Accountants need View or Edit.'},
+       {title:'Click the Reports tab',detail:'Financial reports should be high access for an Accountant.'},
+       {title:'Click the Setup tab',detail:'Limited setup access — accountants don\'t manage system configuration.'},
+       {title:'Compare: open Sales Person role',detail:'Open Sales Person. See Setup tab has far less access. Then see Transactions — full sales transaction access.'}
+     ]
+   },
+   quiz:{questions:[
+     {q:'You need to give a "Junior Buyer" role the ability to view Purchase Orders. Which Permissions tab?',opts:[
+       {t:'Lists tab',c:false,h:'Lists controls entity records (Customers, Vendors, Items) — not transaction types like Purchase Orders.'},
+       {t:'Reports tab',c:false,h:'Reports controls financial statements and saved searches — not transactions.'},
+       {t:'Transactions tab',c:true,e:'Correct! Purchase Orders are a transaction type. PO access lives under the Transactions tab. You\'d find "Purchase Orders" and set the level to View.'},
+       {t:'Setup tab',c:false,h:'Setup controls admin/configuration features. Not transaction access.'}
+     ]},
+     {q:'An administrator wants to prevent a role from accessing Company setup pages (like preferences and accounting settings). Which category tab do you modify?',opts:[
+       {t:'Lists tab',c:false,h:'Lists controls entity record access — Customers, Vendors, Items, etc. Company setup pages are in a different category.'},
+       {t:'Reports tab',c:false,h:'Reports controls access to financial statements and saved searches.'},
+       {t:'Transactions tab',c:false,h:'Transactions controls access to financial transactions like Sales Orders and Invoices.'},
+       {t:'Setup tab',c:true,e:'Correct! The Setup tab controls access to administrative and configuration areas — company settings, accounting preferences, users, and customisation. Setting these to None/View prevents changes to system setup.'}
+     ]},
+     {q:'A role needs access to view the Profit & Loss report and run saved searches. Which category tab?',opts:[
+       {t:'Transactions tab',c:false,h:'Transactions controls access to individual transaction types — not to reports and saved searches.'},
+       {t:'Lists tab',c:false,h:'Lists controls entity record access — not reports.'},
+       {t:'Reports tab',c:true,e:'Correct! The Reports tab controls access to financial statements (like P&L) and saved searches. You\'d grant the appropriate permission level under the Reports tab.'},
+       {t:'Setup tab',c:false,h:'Setup controls administrative configuration — not reporting access.'}
+     ]}
+   ]}
+  },
+  {type:'deep',cat:'Saved Searches & Reports',title:'Saved Searches',
+   learn:{
+     headline:'A Saved Search is a real-time query against live NetSuite data. Results update every time it runs.',
+     body:'Saved Searches are one of NetSuite\'s most powerful features. You pick a record type, set <strong>Criteria</strong> (filters) and <strong>Results</strong> (columns), and NetSuite returns matching records instantly. They can be shared, used as dashboard portlets, and set up as automated email alerts.',
+     points:['<strong>Criteria tab</strong> — filters. "Show only records where Status = Open"','<strong>Results tab</strong> — columns in the output','<strong>Summary type</strong> — on any column: Count, Sum, Min, Max, Average, Group','<strong>Audience tab</strong> — control which roles can see this search','<strong>Email tab</strong> — schedule the search to email results automatically'],
+     examFact:'"Real-time data, operational list" = Saved Search. "Period-based financial statement" = Report. The exam will describe a use case — pick the right tool.'
+   },
+   do:{intro:'Build your first Saved Search from scratch.',
+     steps:[
+       {title:'Start a new Saved Search',path:'Reports → Saved Searches → All Saved Searches → New'},
+       {title:'Choose Transaction as the record type',detail:'Select <strong>Transaction</strong>. Click Create Saved Search.'},
+       {title:'Add a Criteria filter',detail:'In <strong>Criteria</strong> tab: <strong>Date</strong> → <em>is within</em> → <em>this month</em>.'},
+       {title:'Add Results columns',detail:'In <strong>Results</strong> tab: <strong>Document Number</strong>, <strong>Type</strong>, <strong>Amount</strong>, <strong>Status</strong>.'},
+       {title:'Set Summary types',detail:'On Amount: <strong>Sum</strong>. On Type: <strong>Group</strong>. Now the search shows totals grouped by transaction type.'},
+       {title:'Save and run',detail:'Click <strong>Save & Run</strong>. See the grouped results.'}
+     ]
+   },
+   quiz:{questions:[
+     {q:'A sales manager wants a live list on their dashboard showing all open Sales Orders over $10,000. Which tool?',opts:[
+       {t:'Income Statement report',c:false,h:'Income Statements are period-based financial reports — not real-time operational lists.'},
+       {t:'Saved Search',c:true,e:'Correct! Saved Searches are ideal for real-time operational lists with specific criteria. Filter: Type = Sales Order, Status = Open, Amount > 10000. Can be added as a dashboard portlet.'},
+       {t:'Balance Sheet',c:false,h:'A Balance Sheet shows assets, liabilities, and equity at a point in time — not a list of specific transactions.'},
+       {t:'Accounting Period Report',c:false,h:'Accounting Period Reports aggregate by financial period — not designed to filter individual transactions.'}
+     ]},
+     {q:'A Saved Search is set to automatically email results to the finance team every Monday at 8am. Where in the Saved Search is this configured?',opts:[
+       {t:'Criteria tab',c:false,h:'The Criteria tab is where you set record filters — not scheduling.'},
+       {t:'Results tab',c:false,h:'The Results tab defines which columns appear in the output — not when/how it\'s sent.'},
+       {t:'Email tab',c:true,e:'Correct! The Email tab inside a Saved Search is where you configure automated email delivery — set the schedule (daily, weekly, etc.), recipients, and format.'},
+       {t:'Audience tab',c:false,h:'The Audience tab controls which roles can see and run the search — not email scheduling.'}
+     ]},
+     {q:'Two users run the same Saved Search 10 minutes apart. Will they see different results?',opts:[
+       {t:'No — Saved Searches cache results',c:false,h:'Saved Searches do NOT cache — they query the live database every time they run. This is a key difference from Reports.'},
+       {t:'Yes — Saved Searches query live data, so results reflect any changes made in those 10 minutes',c:true,e:'Correct! Saved Searches are real-time — every run queries live data. If a new Sales Order was created between the two runs, the second user will see it. This is by design.'},
+       {t:'No — results are locked when the search is saved',c:false,h:'Saving a search saves the criteria and columns — not the results. Results are always live.'},
+       {t:'Only if they have different roles',c:false,h:'Role differences could affect which records they\'re allowed to see — but regardless of role, the data is always live. Saved Searches don\'t cache results.'}
+     ]}
+   ]}
+  },
+  {type:'deep',cat:'Saved Searches & Reports',title:'Summary Types & Reports vs Searches',
+   learn:{
+     headline:'Summary Types aggregate search results. Reports are for period-based financial data — the two tools are not interchangeable.',
+     body:'When you add a Summary Type to a Saved Search column, individual rows are replaced with aggregated rows. The <strong>Group</strong> type defines the grouping dimension. The other 5 types perform calculations.',
+     points:['<strong>Count</strong> — how many records match','<strong>Sum</strong> — total of a numeric field','<strong>Minimum</strong> — lowest value','<strong>Maximum</strong> — highest value','<strong>Average</strong> — mean value','<strong>Group</strong> — groups rows by this field\'s value (not a calculation — like GROUP BY in SQL)'],
+     examFact:'Saved Search = real-time, any record type, operational. Report = period-based, financial, historical. "Show me today\'s open orders" = Saved Search. "Show me last quarter\'s revenue" = Report (Income Statement).'
+   },
+   do:{intro:'See the difference between a Summary search and a row-level search.',
+     steps:[
+       {title:'Open your Saved Search from before',path:'Reports → Saved Searches → All Saved Searches → [your search]'},
+       {title:'Run without Summary types',detail:'Remove Summary Types from all columns (set to none). Click Run. See individual rows.'},
+       {title:'Re-add Summary types',detail:'Amount → Sum, Type → Group. Click Run again. Rows collapse into grouped totals.'},
+       {title:'Open a Report',path:'Reports → Financial → Income Statement'},
+       {title:'Note the key differences',detail:'Income Statement has Period and Subsidiary filters — it\'s for historical financial analysis. Your search had date criteria — it\'s live operational data.'}
+     ]
+   },
+   quiz:{questions:[
+     {q:'The CFO needs total revenue for Q3 2025 broken down by subsidiary for an audit. Which tool?',opts:[
+       {t:'Saved Search on Transaction records',c:false,h:'A Saved Search could sum amounts, but it\'s not designed for period-based financial reporting with subsidiary breakdowns. Reports are built for this.'},
+       {t:'Income Statement report',c:true,e:'Correct! The Income Statement is period-based and filterable by period (Q3 2025) and subsidiary — exactly what an auditor needs. This is the Reports module\'s purpose.'},
+       {t:'KPI Portlet',c:false,h:'A KPI portlet shows a single metric — not the detailed breakdown an auditor needs.'},
+       {t:'Saved Search with Count summary type',c:false,h:'Count tells you how many records exist — not financial totals. And Count is still a Saved Search, not right for period-based audit reporting.'}
+     ]},
+     {q:'You want to find the single largest Sales Order amount in your system. Which Summary type on the Amount column?',opts:[
+       {t:'Count',c:false,h:'Count returns the NUMBER of records — not their values. It would tell you how many Sales Orders exist, not which has the highest amount.'},
+       {t:'Average',c:false,h:'Average returns the mean value across all records — not the single highest value.'},
+       {t:'Sum',c:false,h:'Sum adds all amounts together — it would give you the TOTAL of all Sales Orders, not the highest single one.'},
+       {t:'Maximum',c:true,e:'Correct! Maximum returns the single highest value in that column. Applied to Amount on a Sales Order search, it gives you the value of the largest order in the system.'}
+     ]},
+     {q:'A Saved Search has Amount with Summary Type = Sum, and Customer with Summary Type = Group. What does the output look like?',opts:[
+       {t:'One row per transaction, with running totals',c:false,h:'When Summary types are applied, individual rows are replaced by grouped rows — not individual rows with running totals.'},
+       {t:'One row per customer, showing total amount for each customer',c:true,e:'Correct! Group on Customer means "group all rows that share the same customer into one row." Sum on Amount means "add up the amounts for that group." Result: one row per customer showing their total spend.'},
+       {t:'A single row showing the grand total',c:false,h:'A single grand total would happen if you applied Sum to Amount with no Group field. With Customer as Group, you get one row per customer.'},
+       {t:'The same as without Summary types',c:false,h:'Applying Summary types fundamentally changes the output — individual rows are collapsed into grouped aggregate rows.'}
+     ]}
+   ]}
+  },
+  {type:'deep',cat:'SuiteFlow',title:'SuiteFlow: States & Transitions',
+   learn:{
+     headline:'A SuiteFlow workflow moves records through stages using States and Transitions.',
+     body:'Think of a workflow as a flowchart. Boxes are <strong>States</strong> — positions a record can be in. Arrows are <strong>Transitions</strong> — they move records between states when conditions are met.',
+     points:['<strong>Workflow</strong> — attached to one record type. Has one or more States.','<strong>State</strong> — a position: "Pending Approval", "Approved", "Rejected"','<strong>Transition</strong> — moves a record to another state when its Condition is true','<strong>Condition</strong> — a rule that must be true for the Transition to fire','<strong>Initial State</strong> — the state new records automatically start in'],
+     examFact:'"What must be true for a record to move from State A to State B?" — a Transition with the matching Condition must exist and evaluate to true. No matching Transition = record stays where it is.'
+   },
+   do:{intro:'Create a two-state workflow with a transition.',
+     steps:[
+       {title:'Go to New Workflow',path:'Customisation → Workflow → Workflows → New'},
+       {title:'Set Record Type to Sales Order',detail:'Set <strong>Trigger Type</strong> to <strong>After Record Submit</strong>. Name it "Test Approval Flow".'},
+       {title:'Add State 1: Pending Review',detail:'Click <strong>New State</strong>. Name: <strong>Pending Review</strong>. Check <strong>Initial State</strong>. Click OK.'},
+       {title:'Add State 2: Approved',detail:'Click <strong>New State</strong> again. Name: <strong>Approved</strong>. Don\'t check Initial State.'},
+       {title:'Add a Transition',detail:'Click on <strong>Pending Review</strong>. Find <strong>Transitions</strong> subtab. Click <strong>New Transition</strong>. Trigger: Always. To State: Approved. Save.'},
+       {title:'See the flow',detail:'A new Sales Order enters Pending Review, then transitions to Approved. In a real workflow you\'d replace "Always" with a meaningful Condition.'}
+     ]
+   },
+   quiz:{questions:[
+     {q:'In a SuiteFlow workflow, what determines whether a record moves from one State to another?',opts:[
+       {t:'An Action in the current State',c:false,h:'Actions do things while the record is IN a state (send emails, set fields). They don\'t move the record — that\'s Transitions.'},
+       {t:'A Transition with a matching Condition',c:true,e:'Correct! Transitions are the "arrows" between States. They fire when their Condition is true. No matching Transition = record stays put.'},
+       {t:'The Trigger Type of the workflow',c:false,h:'The Trigger Type controls WHEN the workflow evaluates — not which State to move to.'},
+       {t:'The Initial State setting',c:false,h:'The Initial State just determines where new records START — it doesn\'t control movement between states.'}
+     ]},
+     {q:'A workflow has 3 states: Draft, Pending Approval, Approved. New records always start in Draft. What is the Draft state called?',opts:[
+       {t:'First State',c:false,h:'"First State" is not a NetSuite term. The specific term is Initial State.'},
+       {t:'Initial State',c:true,e:'Correct! The Initial State is the state that records automatically enter when the workflow first applies to them. You check the "Initial State" checkbox when creating that state.'},
+       {t:'Default State',c:false,h:'"Default State" is not a NetSuite term for this concept.'},
+       {t:'Entry State',c:false,h:'"Entry State" is not the NetSuite term — it\'s called Initial State.'}
+     ]},
+     {q:'A Transition has the condition: Amount > 5000 AND Department = Sales. A record has Amount = 3000 and Department = Sales. Does the transition fire?',opts:[
+       {t:'Yes — Department = Sales is satisfied',c:false,h:'With AND logic, ALL conditions must be true. Department = Sales is true, but Amount > 5000 is false (3000 is not over 5000). Both must be true.'},
+       {t:'No — Amount > 5000 is not satisfied, so the full condition fails',c:true,e:'Correct! AND logic requires ALL conditions to be true. Amount = 3000 fails the > 5000 check, so the overall condition evaluates to false. The record stays in its current state.'},
+       {t:'Yes — at least one condition is met',c:false,h:'That would be OR logic. This condition uses AND, which requires EVERY condition to be satisfied.'},
+       {t:'It depends on the workflow trigger type',c:false,h:'The trigger type controls when the workflow evaluates — it doesn\'t change how AND conditions are evaluated.'}
+     ]}
+   ]}
+  },
+  {type:'deep',cat:'SuiteFlow',title:'SuiteFlow: Triggers & Actions',
+   learn:{
+     headline:'Triggers control WHEN a workflow evaluates. Actions control WHAT HAPPENS while a record is in a State.',
+     body:'These are frequently confused in exam questions. The <strong>Trigger</strong> is the event that makes NetSuite check the workflow. <strong>Actions</strong> are the things that happen (sending emails, setting fields) inside a State.',
+     points:['<strong>Before Record Load</strong> — fires before the form opens for editing','<strong>Before Record Submit</strong> — fires before save. Use to PREVENT a bad save.','<strong>After Record Submit</strong> — fires after save. Most common. Cannot prevent the save.','<strong>Scheduled</strong> — runs on a time-based schedule across all matching records','<strong>On-Demand</strong> — triggered by a button the user clicks','<strong>Actions:</strong> Send Email · Set Field Value · Create Record · Lock Record · Custom Action'],
+     examFact:'"Prevent a bad save" = Before Record Submit. "Do something AFTER saving" = After Record Submit. This is the most frequently tested SuiteFlow distinction on the exam.'
+   },
+   do:{intro:'Add an Action to your workflow from the previous exercise.',
+     steps:[
+       {title:'Open your workflow',path:'Customisation → Workflow → Workflows → [Test Approval Flow]'},
+       {title:'Click on the Pending Review state',detail:'Click the state box.'},
+       {title:'Go to the Actions subtab',detail:'Find <strong>Actions</strong>. Click <strong>New Action</strong>.'},
+       {title:'Add a Send Email action',detail:'Select <strong>Send Email</strong>. From: a user. To: Sales Rep field on the record. Subject: "Sales Order Pending Review". Save.'},
+       {title:'Note: this fires WHILE in Pending Review',detail:'This email fires while the record IS in the Pending Review state. It does NOT move the record — only a Transition does that.'},
+       {title:'Check the workflow trigger',detail:'Confirm Trigger Type = <strong>After Record Submit</strong>. The workflow checks every time a Sales Order is saved.'}
+     ]
+   },
+   quiz:{questions:[
+     {q:'A workflow should stop a Sales Order from saving if the Amount field is blank. Which trigger?',opts:[
+       {t:'After Record Submit',c:false,h:'After Record Submit fires AFTER the record is already in the database. Too late to prevent the save.'},
+       {t:'Before Record Load',c:false,h:'Before Record Load fires when the form opens — before the user has filled anything in. Too early to validate a save.'},
+       {t:'Before Record Submit',c:true,e:'Correct! Before Record Submit fires just before the record is written to the database. A validation action here can throw an error and abort the save — exactly what you need.'},
+       {t:'Scheduled',c:false,h:'Scheduled triggers run on a time-based schedule — not at the moment of a specific record save.'}
+     ]},
+     {q:'A workflow should automatically set the "Reviewed By" field to the current user\'s name when they approve a record. Which Action type?',opts:[
+       {t:'Send Email',c:false,h:'Send Email sends an email — it doesn\'t change field values on the record.'},
+       {t:'Set Field Value',c:true,e:'Correct! Set Field Value allows the workflow to programmatically write a value to any field on the record. You\'d set "Reviewed By" = {Current User} when the approval action fires.'},
+       {t:'Create Record',c:false,h:'Create Record makes a new linked record (like a Task) — it doesn\'t write values to the current record.'},
+       {t:'Lock Record',c:false,h:'Lock Record prevents further editing — it doesn\'t write field values.'}
+     ]},
+     {q:'A Scheduled workflow runs every night at midnight across all Customer records. A customer doesn\'t meet the workflow\'s condition. What happens to that record?',opts:[
+       {t:'The record is flagged for manual review',c:false,h:'Workflows don\'t flag records for review unless you specifically configure an Action to do so.'},
+       {t:'Nothing — conditions not met means no actions fire and no state changes occur',c:true,e:'Correct! If a record doesn\'t meet the workflow\'s condition, the workflow simply evaluates to false for that record and moves on. No actions fire, no state changes happen.'},
+       {t:'The record is moved to an error state',c:false,h:'There\'s no automatic "error state" — the workflow just skips records that don\'t meet conditions.'},
+       {t:'The workflow stops running for all records',c:false,h:'One record failing a condition doesn\'t stop the workflow — it continues to the next record.'}
+     ]}
+   ]}
+  },
+  // RECOGNITION CONCEPTS (2-page: Learn + Quiz)
+  {type:'recog',cat:'Modules & Platform',title:'Module Overview',
+   learn:{
+     headline:'Features in NetSuite are grouped into modules. Enable a module to unlock its features.',
+     body:'When NetSuite is first set up, many features are disabled. An admin enables modules via <strong>Setup → Company → Enable Features</strong>. The exam will ask which module enables a specific feature.',
+     points:['<strong>CRM module</strong> → Opportunities, Leads, Cases (support tickets), Campaigns, Forecasting','<strong>Inventory module</strong> → Inventory Items, Bin Management, Lot Tracking, Assemblies','<strong>Multi-Currency</strong> → Currency exchange rates, foreign currency transactions','<strong>Payroll</strong> → Payroll runs, paycheck generation, tax withholding','<strong>Advanced Financials</strong> → Budgeting, Amortisation schedules','<strong>SuiteCommerce</strong> → Web store / e-commerce'],
+     examFact:'"Which feature requires CRM?" → Opportunities and Cases. "Track physical stock quantities?" → Inventory module. Direct recall — no scenario analysis needed.'
+   },
+   quiz:{questions:[
+     {q:'A company wants to track sales Opportunities and manage customer support Cases. Which module?',opts:[
+       {t:'Inventory module',c:false,h:'Inventory enables physical stock tracking — Opportunities and Cases are CRM features.'},
+       {t:'Advanced Financials',c:false,h:'Advanced Financials enables budgeting and amortisation.'},
+       {t:'CRM module',c:true,e:'Correct! The CRM module enables Opportunities, Leads, Cases, Campaigns, and Forecasting.'},
+       {t:'Payroll module',c:false,h:'Payroll enables paycheck generation and tax withholding.'}
+     ]},
+     {q:'Where in NetSuite do you go to enable or disable modules?',opts:[
+       {t:'Customisation → Company → Features',c:false,h:'The Customisation menu is for scripts, workflows, and custom fields — not module management.'},
+       {t:'Setup → Company → Enable Features',c:true,e:'Correct! Setup → Company → Enable Features is where administrators enable or disable NetSuite modules and individual features within them.'},
+       {t:'Lists → Configuration → Modules',c:false,h:'Lists contains entity records — not module configuration.'},
+       {t:'Reports → System → Feature Management',c:false,h:'Reports contains saved searches and financial reports — not module management.'}
+     ]},
+     {q:'A company wants to sell products through a website that integrates directly with their NetSuite inventory and order management. Which module?',opts:[
+       {t:'Advanced Shipping',c:false,h:'Advanced Shipping enables multi-location fulfilment and carrier integrations — not a web storefront.'},
+       {t:'Multi-Currency',c:false,h:'Multi-Currency handles foreign exchange — not e-commerce.'},
+       {t:'SuiteCommerce',c:true,e:'Correct! SuiteCommerce is NetSuite\'s e-commerce module. It enables a web store that is natively integrated with NetSuite inventory, pricing, and order management.'},
+       {t:'CRM module',c:false,h:'CRM handles sales pipeline and support cases — not a website storefront.'}
+     ]}
+   ]}
+  },
+  {type:'recog',cat:'Modules & Platform',title:'Order-to-Cash & Procure-to-Pay',
+   learn:{
+     headline:'These are the two core transaction chains. The exam tests every link in each chain.',
+     body:'Know each step and what it records. The chains mirror each other — one from the selling side, one from the buying side.',
+     points:['<strong>Order-to-Cash:</strong> Lead → Opportunity → Quote → Sales Order → Item Fulfillment → Invoice → Customer Payment','<strong>Sales Order</strong> — non-posting commitment to sell','<strong>Item Fulfillment</strong> — records shipment. Reduces inventory.','<strong>Invoice</strong> — posts to GL. Creates Accounts Receivable.','<strong>Procure-to-Pay:</strong> Purchase Requisition → Purchase Order → Item Receipt → Vendor Bill → Vendor Payment','<strong>Item Receipt</strong> — records goods arriving. Increases inventory.','<strong>Vendor Bill</strong> — posts to GL. Creates Accounts Payable.'],
+     examFact:'"What comes after Sales Order (physical goods)?" → Item Fulfillment. "What creates Accounts Receivable?" → Invoice. "What increases inventory on receipt?" → Item Receipt. "What creates Accounts Payable?" → Vendor Bill.'
+   },
+   quiz:{questions:[
+     {q:'In a standard order-to-cash flow for physical goods, what transaction comes directly AFTER the Sales Order?',opts:[
+       {t:'Invoice',c:false,h:'Invoice comes AFTER Item Fulfillment. Standard sequence: Sales Order → Item Fulfillment → Invoice → Customer Payment.'},
+       {t:'Customer Payment',c:false,h:'Customer Payment comes last — after goods are shipped and the invoice has been sent.'},
+       {t:'Item Fulfillment',c:true,e:'Correct! Item Fulfillment records the physical picking, packing, and shipping of goods. It comes right after the Sales Order and reduces inventory quantity.'},
+       {t:'Journal Entry',c:false,h:'Journal Entries are direct accounting entries — not a standard step in the operational order-to-cash flow.'}
+     ]},
+     {q:'Which procure-to-pay transaction creates the Accounts Payable accounting entry?',opts:[
+       {t:'Purchase Order',c:false,h:'Purchase Orders are non-posting — they\'re a commitment to buy but don\'t create AP entries.'},
+       {t:'Item Receipt',c:false,h:'Item Receipt records the physical arrival of goods — in standard accounting it may trigger COGS/inventory, but not Accounts Payable.'},
+       {t:'Vendor Bill',c:true,e:'Correct! The Vendor Bill is the vendor\'s invoice to you — creating it in NetSuite posts a debit to the expense/inventory account and a credit to Accounts Payable.'},
+       {t:'Vendor Payment',c:false,h:'Vendor Payment records money sent to the vendor — it CLOSES the Accounts Payable entry created by the Bill. It doesn\'t create AP.'}
+     ]},
+     {q:'Which transaction in the procure-to-pay flow records that 50 units arrived at your warehouse and INCREASES inventory on hand?',opts:[
+       {t:'Vendor Bill',c:false,h:'Vendor Bill records the financial obligation to pay — not the physical arrival of goods.'},
+       {t:'Item Receipt',c:true,e:'Correct! Item Receipt records the physical arrival of goods and automatically increases inventory quantity on hand. It\'s linked to the originating Purchase Order.'},
+       {t:'Purchase Order',c:false,h:'Purchase Order is the commitment to buy — created before goods arrive.'},
+       {t:'Vendor Payment',c:false,h:'Vendor Payment records money sent to pay the vendor — it has nothing to do with inventory quantity.'}
+     ]}
+   ]}
+  },
+  {type:'recog',cat:'Modules & Platform',title:'Dashboard & Portlets',
+   learn:{
+     headline:'The Home dashboard is personalised per user. Portlets are the widgets that populate it.',
+     body:'Each user can personalise their dashboard. Role-based dashboards can be set as defaults. The exam tests which portlet type to use for a given scenario.',
+     points:['<strong>KPI</strong> — shows a single summarised number from a Saved Search','<strong>Saved Search portlet</strong> — shows results of a Saved Search as a list or chart','<strong>Reminders</strong> — shows counts of records needing attention (e.g. 5 overdue invoices)','<strong>Recent Records</strong> — quick access to recently viewed records','<strong>Trend Graph</strong> — charts a KPI over time as a line/bar chart','<strong>Calendar</strong> — shows tasks and scheduled events','<strong>RSS Feed</strong> — embeds an external RSS feed'],
+     examFact:'"Single dollar figure" = KPI. "List of overdue invoices" = Saved Search portlet. "Revenue trend over 12 months as a chart" = Trend Graph. "Count of open cases" = KPI or Reminders.'
+   },
+   quiz:{questions:[
+     {q:'A CFO wants to see the total value of all open invoices as a single dollar figure on their dashboard. Which portlet?',opts:[
+       {t:'Reminders',c:false,h:'Reminders show counts of records needing action — not aggregated financial totals.'},
+       {t:'Recent Records',c:false,h:'Recent Records is a navigation shortcut — not a financial metric.'},
+       {t:'KPI',c:true,e:'Correct! A KPI portlet shows a single summarised number — the Sum of Amount on a Saved Search filtered to open invoices.'},
+       {t:'Calendar',c:false,h:'Calendar shows scheduled events and tasks.'}
+     ]},
+     {q:'A manager wants to see a list of all customers who have not placed an order in the last 90 days, shown on their dashboard. Which portlet?',opts:[
+       {t:'KPI portlet',c:false,h:'KPI shows a single number — not a list of individual customers.'},
+       {t:'Saved Search portlet',c:true,e:'Correct! A Saved Search portlet displays the results of a Saved Search as a list. You\'d build a search: Customers where last order date > 90 days ago, then add it as a portlet.'},
+       {t:'Trend Graph',c:false,h:'Trend Graph shows a KPI charted over time — not a list of specific customers.'},
+       {t:'Reminders',c:false,h:'Reminders show record counts for predefined business rules — not a custom criteria list.'}
+     ]},
+     {q:'Where do you go to add a new portlet to your NetSuite Home dashboard?',opts:[
+       {t:'Setup → Dashboard → Add Portlet',c:false,h:'Dashboard configuration isn\'t under Setup for personal dashboards.'},
+       {t:'Home → Personalise Dashboard → Add Portlets',c:true,e:'Correct! On the Home dashboard, click Personalise Dashboard (top right) then Add Portlets to choose from the available portlet types.'},
+       {t:'Reports → Dashboard → Manage Portlets',c:false,h:'The Reports menu contains saved searches and financial reports — not dashboard management.'},
+       {t:'Lists → Dashboard → Configure',c:false,h:'Lists contains entity records — not dashboard configuration.'}
+     ]}
+   ]}
+  },
+  {type:'recog',cat:'Modules & Platform',title:'CSV Import',
+   learn:{
+     headline:'CSV Import bulk-loads records into NetSuite from a spreadsheet. It lives under Setup → Import/Export.',
+     body:'When going live or bulk-creating records, CSV Import is the tool. Upload a .csv file, map columns to NetSuite fields, and run the import.',
+     points:['<strong>Where:</strong> Setup → Import/Export → Import CSV Records','<strong>Can import:</strong> Customers, Vendors, Employees, Items, Transactions, and more','<strong>Mapping:</strong> Telling NetSuite which CSV column = which NetSuite field','<strong>Import Assistant:</strong> A step-by-step wizard that guides the mapping process','<strong>Internal ID lookup:</strong> For List/Record fields, map using internal ID or name'],
+     examFact:'"Bulk import 500 customer records from a spreadsheet" → CSV Import. "Where is it?" → Setup → Import/Export → Import CSV Records. The mapping step is always required.'
+   },
+   quiz:{questions:[
+     {q:'A company needs to migrate 2,000 vendor records from their old system. What is the correct tool and path?',opts:[
+       {t:'Lists → Relationships → Vendors → Import',c:false,h:'There\'s no Import button directly on the Vendors list. Import lives under Setup.'},
+       {t:'Setup → Import/Export → Import CSV Records',c:true,e:'Correct! CSV Import is always under Setup → Import/Export → Import CSV Records. Select Vendor as record type, upload the CSV, map columns, run the import.'},
+       {t:'Customisation → Lists → Bulk Load',c:false,h:'"Bulk Load" isn\'t a real NetSuite menu path.'},
+       {t:'Reports → Data Import → New',c:false,h:'The Reports menu contains searches and financial reports — not import tools.'}
+     ]},
+     {q:'During a CSV Import, you need to tell NetSuite which spreadsheet column maps to which NetSuite field. What is this step called?',opts:[
+       {t:'Translation',c:false,h:'"Translation" is not the term for this step in NetSuite\'s import process.'},
+       {t:'Mapping',c:true,e:'Correct! The mapping step is where you tell NetSuite: "My CSV column called \'Company\' should go into the Company Name field." This is required for every import.'},
+       {t:'Validation',c:false,h:'Validation checks data quality, but the step of connecting CSV columns to NetSuite fields is specifically called Mapping.'},
+       {t:'Parsing',c:false,h:'"Parsing" refers to reading the file format — not the column-to-field assignment step.'}
+     ]},
+     {q:'Can you import Sales Order transaction records via CSV Import in NetSuite?',opts:[
+       {t:'No — CSV Import only supports entity records like Customers and Vendors',c:false,h:'CSV Import supports many record types including transactions. It\'s not limited to entity records.'},
+       {t:'Yes — CSV Import supports many transaction types including Sales Orders',c:true,e:'Correct! CSV Import supports importing Customers, Vendors, Items, Employees, and many transaction types including Sales Orders, Invoices, and more.'},
+       {t:'No — transactions must be entered manually or via SuiteScript',c:false,h:'While SuiteScript can also create records, CSV Import is a perfectly valid way to bulk-import transactions.'},
+       {t:'Only if the company uses OneWorld',c:false,h:'CSV Import availability has nothing to do with whether OneWorld is enabled.'}
+     ]}
+   ]}
+  },
+  {type:'recog',cat:'Customisation',title:'Custom Segments vs Custom Fields',
+   learn:{
+     headline:'Custom Fields add data to ONE record type. Custom Segments add a reporting dimension across ALL record types.',
+     body:'Both add custom data — but at very different scopes. The exam will give you a scenario and ask which to use.',
+     points:['<strong>Custom Field</strong> — adds one new field to one specific record type only. Path: Customisation → Lists, Records & Fields → Fields.','<strong>Custom Segment</strong> — a dimension spanning ALL record types (like Department or Class). Shows on transactions AND entity records. For financial reporting slices. Path: Setup → Company → Segments.','<strong>Custom Record Type</strong> — creates an entirely new record type (like a "Project" record).','<strong>Custom Form</strong> — changes the layout/display of existing forms. Doesn\'t add new data.'],
+     examFact:'"Field only on Customer records" = Custom Field. "Dimension on both Customers AND invoices AND sales orders for multi-dimensional reporting" = Custom Segment.'
+   },
+   quiz:{questions:[
+     {q:'A company wants to track "Sales Channel" on Customers, Sales Orders, AND Invoices simultaneously for financial reporting. What should they use?',opts:[
+       {t:'Three separate Custom Fields — one on each record type',c:false,h:'Three separate fields wouldn\'t be linked — reporting across all three would be inconsistent. Custom Segments are built for this.'},
+       {t:'A Custom Segment',c:true,e:'Correct! Custom Segments are cross-record-type reporting dimensions. A single "Sales Channel" segment automatically appears on Customers, Transactions, and other records for consistent multi-dimensional reporting.'},
+       {t:'A Custom Record Type',c:false,h:'A Custom Record Type creates a new kind of record — it doesn\'t add a dimension to existing records.'},
+       {t:'A Custom Form',c:false,h:'A Custom Form changes the display layout — it doesn\'t add new data fields.'}
+     ]},
+     {q:'A company wants to add a "Customer Tier" field (Gold/Silver/Bronze) that ONLY appears on Customer records. Which should they use?',opts:[
+       {t:'Custom Segment',c:false,h:'Custom Segments appear across ALL record types — overkill and incorrect for a field that should only be on Customer records.'},
+       {t:'Custom Field on the Customer record',c:true,e:'Correct! A Custom Field added to the Customer record type only appears on Customer records. Since "Customer Tier" is a Customer-only concept, this is the right scope.'},
+       {t:'Custom Form',c:false,h:'A Custom Form changes the layout/display — it doesn\'t create new data fields.'},
+       {t:'Custom Record Type',c:false,h:'A Custom Record Type creates an entirely new kind of record — not a new field on an existing one.'}
+     ]},
+     {q:'Where do you create a Custom Segment in NetSuite?',opts:[
+       {t:'Customisation → Lists, Records & Fields → Segments',c:false,h:'Custom Segments are not under the Customisation menu — they\'re under Setup.'},
+       {t:'Setup → Company → Segments',c:true,e:'Correct! Custom Segments are found under Setup → Company → Segments — alongside other company-wide configuration like subsidiaries and accounting periods.'},
+       {t:'Reports → Customisation → Segments',c:false,h:'The Reports menu contains saved searches and financial reports — not customisation tools.'},
+       {t:'Lists → Customisation → New Segment',c:false,h:'The Lists menu contains entity records — not customisation configuration.'}
+     ]}
+   ]}
+  },
+  {type:'recog',cat:'Customisation',title:'Accounting Periods & Custom Forms',
+   learn:{
+     headline:'Accounting periods control financial reporting windows. Custom Forms control what users see — not what data exists.',
+     body:'Two separate concepts. Know each independently for the exam.',
+     points:['<strong>Accounting Periods</strong> — Path: Setup → Accounting → Manage Accounting Periods. Define your fiscal calendar. A <strong>locked</strong> period prevents new transactions from posting to it. Only admins can unlock.','<strong>Custom Form</strong> — Path: Customisation → Forms → [type]. A different view of an existing record. Can hide/reorder/rename fields, set defaults, assign to roles.','<strong>Key distinction:</strong> Hiding a field on a Custom Form does NOT delete the data — it just hides it from that form. The data still exists.'],
+     examFact:'"User can\'t post a journal entry to last month" → accounting period is locked. "Hide Department from Sales Reps" → Custom Form with Department hidden, assigned to the Sales Rep role.'
+   },
+   quiz:{questions:[
+     {q:'A user tries to post a journal entry dated last month but gets an error saying the period is closed. What must an admin do?',opts:[
+       {t:'Create a new Journal Entry record type',c:false,h:'The Journal Entry record type already exists — the issue is the accounting period, not the record type.'},
+       {t:'Unlock (reopen) the accounting period',c:true,e:'Correct! When an accounting period is locked, no new transactions can be posted to it. An admin can unlock/reopen the period to allow the journal entry, then re-lock it after.'},
+       {t:'Give the user Full permission on Journal Entries',c:false,h:'The error is about an accounting period lock — not about the user\'s permissions on the Journal Entry transaction type.'},
+       {t:'Change the date on the Journal Entry to this month',c:false,h:'Changing the date might be a workaround, but it\'s not the correct fix for posting to last month.'}
+     ]},
+     {q:'A Sales Rep shouldn\'t see the "Cost" field on Item records. What is the correct approach?',opts:[
+       {t:'Delete the Cost field from the Item record type',c:false,h:'Deleting a standard field isn\'t possible for built-in fields, and would affect ALL users — not just Sales Reps.'},
+       {t:'Create a Custom Form for Item records with Cost hidden, assign it to the Sales Rep role',c:true,e:'Correct! Custom Forms let you create a role-specific view. By assigning an Item form without Cost to the Sales Rep role, they don\'t see it — but the data still exists for other roles.'},
+       {t:'Lock the accounting period',c:false,h:'Locking an accounting period prevents transactions from posting to that period — completely unrelated to hiding a field.'},
+       {t:'Remove the Item record type from the Sales Rep role',c:false,h:'Removing Item access entirely would prevent Sales Reps from looking up items at all — that\'s too restrictive.'}
+     ]},
+     {q:'A Custom Form hides the "Department" field for the Sales Rep role. Does the Department data still exist on records saved by other roles?',opts:[
+       {t:'No — hiding a field on a form deletes the underlying data',c:false,h:'Custom Forms only control display — they never delete data. Hiding a field is a layout change, not a data change.'},
+       {t:'Yes — Custom Forms only control display, not data storage',c:true,e:'Correct! Custom Forms are purely a display layer. Hiding Department from Sales Reps doesn\'t affect the actual field data — other roles using a different form will still see and use the Department field normally.'},
+       {t:'Only if the field was created as a Custom Field',c:false,h:'This applies to all fields — standard and custom alike. Forms control display only, regardless of field type.'},
+       {t:'It depends on whether the period is locked',c:false,h:'Accounting periods control transaction posting — completely unrelated to Custom Form field visibility.'}
+     ]}
+   ]}
+  },
+  {type:'recog',cat:'Platform & Reporting',title:'OneWorld & Subsidiaries',
+   learn:{
+     headline:'OneWorld is NetSuite\'s multi-entity edition. Subsidiaries are separate legal entities within one account.',
+     body:'Many companies have multiple legal entities. OneWorld lets them share one NetSuite account while keeping separate books.',
+     points:['<strong>OneWorld</strong> — the NetSuite edition supporting multiple subsidiaries','<strong>Subsidiary</strong> — a legal entity within the account. Own chart of accounts, currency, tax.','<strong>Intercompany transactions</strong> — transactions between subsidiaries. NetSuite automates matching entries on both sides.','<strong>Consolidated reporting</strong> — combines multiple subsidiaries. Eliminates intercompany transactions automatically.','<strong>Role restriction</strong> — a role can be limited to specific subsidiaries.'],
+     examFact:'"Multiple legal entities in one account" = OneWorld. "Reports combining all subsidiaries" = consolidated reports. "User who can only access one country\'s data" = subsidiary-restricted role.'
+   },
+   quiz:{questions:[
+     {q:'A company operates in the UK, US, and Germany from one NetSuite account. A UK accountant should only see UK data. What enables this?',opts:[
+       {t:'Standard NetSuite with multiple roles',c:false,h:'Standard NetSuite doesn\'t support truly separate legal entity books. You need OneWorld.'},
+       {t:'OneWorld with a subsidiary-restricted role',c:true,e:'Correct! OneWorld enables multiple subsidiaries in one account. The UK accountant\'s role is then restricted to the UK subsidiary — they only see UK data in reports and transactions.'},
+       {t:'Multi-Currency module only',c:false,h:'Multi-Currency handles foreign exchange but doesn\'t create separate legal entity books.'},
+       {t:'Advanced Financials with separate logins',c:false,h:'Separate logins = separate accounts, not one consolidated system. Advanced Financials adds budgeting, not multi-entity support.'}
+     ]},
+     {q:'What is the term for transactions between two subsidiaries within the same OneWorld account?',opts:[
+       {t:'Cross-entity transactions',c:false,h:'"Cross-entity" is not the NetSuite term.'},
+       {t:'Intercompany transactions',c:true,e:'Correct! Intercompany transactions are transactions between subsidiaries in the same OneWorld account. NetSuite can automatically generate the matching accounting entries on both sides.'},
+       {t:'Multi-subsidiary entries',c:false,h:'"Multi-subsidiary entries" is not the standard NetSuite term.'},
+       {t:'Consolidated entries',c:false,h:'Consolidated entries/reports combine subsidiary data for reporting — but the transactions between subsidiaries are specifically called intercompany transactions.'}
+     ]},
+     {q:'A report that combines financial data from the UK, US, and German subsidiaries into one view (eliminating intercompany transactions) is called a...',opts:[
+       {t:'Summary report',c:false,h:'"Summary report" is a generic term, not the specific NetSuite term for this type.'},
+       {t:'Consolidated report',c:true,e:'Correct! A consolidated report combines data from multiple subsidiaries into one view and automatically eliminates intercompany transactions to avoid double-counting.'},
+       {t:'Global ledger report',c:false,h:'"Global ledger report" is not a standard NetSuite report type.'},
+       {t:'Multi-currency report',c:false,h:'Multi-currency relates to foreign exchange — not the combination of subsidiary data into one view.'}
+     ]}
+   ]}
+  },
+  {type:'recog',cat:'Platform & Reporting',title:'SuiteAnalytics Workbooks',
+   learn:{
+     headline:'SuiteAnalytics Workbooks are a drag-and-drop analytics tool — more flexible than Saved Searches for ad-hoc analysis.',
+     body:'Saved Searches are great for operational lists. For pivot tables, charts, and complex cross-record analysis, use <strong>SuiteAnalytics Workbooks</strong>.',
+     points:['<strong>Where:</strong> Analytics → Workbooks (top navigation)','<strong>What:</strong> Drag-and-drop pivot tables, visualisations, cross-record data exploration','<strong>Different from Saved Searches:</strong> More flexible and visual — but not for operational lists or dashboard portlets','<strong>Dataset:</strong> A Workbook is built on a Dataset (defined set of records and fields). Multiple Workbooks can share one Dataset.','<strong>Still live data</strong> — not cached/historical like a Report'],
+     examFact:'"Drag-and-drop pivot table" = SuiteAnalytics Workbook. "Real-time list of specific records" = Saved Search. "Period-based financial statement" = Report. Three different tools for three different jobs.'
+   },
+   quiz:{questions:[
+     {q:'An analyst wants a drag-and-drop pivot table showing sales by region, rep, and product with a chart. Which tool?',opts:[
+       {t:'Saved Search with Summary types',c:false,h:'Saved Searches can do summaries but not true pivot tables or visual charts in a drag-and-drop interface.'},
+       {t:'Report Builder',c:false,h:'Report Builder creates period-based financial reports — not drag-and-drop pivot analysis.'},
+       {t:'SuiteAnalytics Workbook',c:true,e:'Correct! SuiteAnalytics Workbooks are NetSuite\'s drag-and-drop analytics tool — perfect for pivot tables and charts across multiple dimensions.'},
+       {t:'KPI Portlet',c:false,h:'A KPI portlet shows a single number — not a multi-dimensional pivot table.'}
+     ]},
+     {q:'A SuiteAnalytics Workbook is built on top of what object that defines the available records and fields?',opts:[
+       {t:'A Saved Search',c:false,h:'Workbooks are not built on Saved Searches — they have their own data layer.'},
+       {t:'A Dataset',c:true,e:'Correct! A Workbook is built on a Dataset — a defined collection of records, fields, and joins. Multiple Workbooks can use the same Dataset, and you can share Datasets across teams.'},
+       {t:'A Report',c:false,h:'Reports and Workbooks are separate tools. Workbooks are built on Datasets, not Reports.'},
+       {t:'An Accounting Period',c:false,h:'Accounting periods are financial time windows — not the data definition layer for Workbooks.'}
+     ]},
+     {q:'You need real-time operational data showing which orders shipped today as a list. Saved Search or SuiteAnalytics Workbook?',opts:[
+       {t:'SuiteAnalytics Workbook — it\'s more powerful',c:false,h:'Power isn\'t the deciding factor — fit is. Workbooks are for ad-hoc pivot analysis. A simple real-time operational list is exactly what Saved Searches are designed for.'},
+       {t:'Saved Search',c:true,e:'Correct! Operational lists (show me records matching these criteria right now) = Saved Search. Ad-hoc pivot analysis = Workbook. Use the right tool for the job.'},
+       {t:'Income Statement Report',c:false,h:'Income Statements are period-based financial reports — not operational shipping lists.'},
+       {t:'Either — they produce the same result',c:false,h:'They don\'t produce the same result. Saved Searches return lists of records. Workbooks return pivot tables and charts. Different outputs for different use cases.'}
+     ]}
+   ]}
+  }
+];
+
+// ─── STATE ───────────────────────────────────────────────────────────
+let ci=0,pi=0;
+let doChecks={};   // ci -> bool[]
+let quizQ={};      // ci -> current question index (0,1,2)
+let quizSel={};    // ci -> selected answer index for current question
+let quizDone={};   // ci -> bool[] (which questions passed)
+let quizPassed={}; // ci -> all questions passed
+
+function pages(c){return c.type==='deep'?['learn','do','quiz']:['learn','quiz'];}
+function pt(){return pages(C[ci])[pi];}
+function numQ(c){return c.quiz.questions.length;}
+
+// ─── LOCALSTORAGE ────────────────────────────────────────────────────
+const SK='ns_coach_v3';
+function save(){
+  try{
+    localStorage.setItem(SK,JSON.stringify({ci,pi,doChecks,quizQ,quizSel,quizDone,quizPassed}));
+    const pill=document.getElementById('savePill');
+    if(pill){pill.classList.remove('hidden');clearTimeout(pill._t);pill._t=setTimeout(()=>pill.classList.add('hidden'),2000);}
+  }catch(e){}
+}
+function load(){
+  try{
+    const d=localStorage.getItem(SK);
+    if(!d)return;
+    const s=JSON.parse(d);
+    ci=s.ci||0;pi=s.pi||0;
+    doChecks=s.doChecks||{};quizQ=s.quizQ||{};quizSel=s.quizSel||{};
+    quizDone=s.quizDone||{};quizPassed=s.quizPassed||{};
+  }catch(e){}
+}
+
+// ─── RENDER ──────────────────────────────────────────────────────────
+function render(){
+  const c=C[ci],p=pt();
+  let h='';
+  const meta=`<div class="concept-meta">${c.cat}</div>`;
+  const num=`<div class="concept-num-badge">Concept ${ci+1} of ${C.length}</div>`;
+
+  if(p==='learn'){
+    h+=`<div class="page-badge badge-learn"><span class="badge-dot"></span>LEARN</div>`;
+    h+=meta+`<h1>${c.title}</h1>`+num;
+    h+=`<div class="learn-headline">${c.learn.headline}</div>`;
+    h+=`<div class="learn-body">${c.learn.body}</div>`;
+    if(c.learn.points)h+=`<ul class="key-points">${c.learn.points.map(p=>`<li>${p}</li>`).join('')}</ul>`;
+    h+=`<div class="exam-fact"><b>📌 Exam note</b>${c.learn.examFact}</div>`;
+
+  }else if(p==='do'){
+    h+=`<div class="page-badge badge-do"><span class="badge-dot"></span>DO IT NOW</div>`;
+    h+=meta+`<h1>${c.title}</h1>`+num;
+    h+=`<div class="do-intro">🛠️ ${c.do.intro}</div>`;
+    if(!doChecks[ci])doChecks[ci]=new Array(c.do.steps.length).fill(false);
+    h+=`<ul class="step-list">`;
+    c.do.steps.forEach((s,i)=>{
+      const done=doChecks[ci][i];
+      h+=`<li class="step-item${done?' done':''}" onclick="toggleStep(${i})">
+        <div class="step-check"><span class="step-tick">✓</span></div>
+        <div class="step-num">${i+1}</div>
+        <div class="step-content">
+          <div class="step-title">${s.title}</div>
+          ${s.detail?`<div class="step-detail">${s.detail}</div>`:''}
+          ${s.path?`<span class="step-path">📍 ${s.path}</span>`:''}
+        </div></li>`;
+    });
+    h+=`</ul>`;
+    const allDone=doChecks[ci]&&doChecks[ci].every(Boolean);
+    h+=`<div class="do-gate${allDone?' unlocked':''}">${allDone?'✅ All steps done — click Next to continue.':'Tick each step as you complete it in NetSuite to unlock Next.'}</div>`;
+
+  }else if(p==='quiz'){
+    h+=`<div class="page-badge badge-quiz"><span class="badge-dot"></span>QUIZ</div>`;
+    h+=meta+`<h1>${c.title}</h1>`+num;
+    const nq=numQ(c);
+    const qi=quizQ[ci]||0;
+    const done=quizDone[ci]||new Array(nq).fill(false);
+    // Step pills
+    h+=`<div class="quiz-header"><div class="quiz-step-pills">`;
+    for(let i=0;i<nq;i++){
+      let cls='qpill';
+      if(done[i])cls+=' passed';
+      else if(i===qi)cls+=' active';
+      h+=`<div class="${cls}">${i+1}</div>`;
+    }
+    h+=`</div><div class="quiz-progress-label">Question ${qi+1} of ${nq}</div></div>`;
+
+    if(quizPassed[ci]){
+      h+=`<div style="text-align:center;padding:40px 20px">
+        <div style="font-size:48px;margin-bottom:12px">🎉</div>
+        <div style="font-size:20px;font-weight:700;color:var(--green);margin-bottom:8px">All ${nq} questions correct!</div>
+        <div style="font-size:14px;color:var(--dim)">Click Next to continue to the next concept.</div>
+      </div>`;
+    }else{
+      const q=c.quiz.questions[qi];
+      const sel=quizSel[ci];
+      h+=`<div class="quiz-q">${q.q}</div><div class="quiz-options">`;
+      const L=['A','B','C','D'];
+      q.opts.forEach((o,i)=>{
+        let cls='quiz-opt';
+        if(sel!==undefined){cls+=' locked';if(i===sel)cls+=o.c?' correct':' wrong';}
+        h+=`<div class="${cls}" onclick="answerQuiz(${i})"><span class="opt-letter">${L[i]}</span>${o.t}</div>`;
+      });
+      h+=`</div>`;
+      if(sel!==undefined){
+        const o=q.opts[sel];
+        if(o.c){
+          h+=`<div class="quiz-feedback fb-right show"><div class="fb-title">✓ Correct!</div>${o.e}</div>`;
+          if(qi<nq-1){
+            h+=`<button class="next-q-btn show" onclick="nextQuestion()">Next Question →</button>`;
+          }
+        }else{
+          h+=`<div class="quiz-feedback fb-wrong show"><div class="fb-title">✗ Not quite</div>${o.h}<br><br><strong style="color:var(--orange2)">Try again.</strong></div>`;
+        }
+      }
+    }
+  }
+
+  document.getElementById('mainArea').innerHTML=h;
+  updateBar();window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function updateBar(){
+  const c=C[ci],p=pt(),ps=pages(c);
+  const nq=numQ(c);
+  const qi=quizQ[ci]||0;
+  // Progress: each concept page + each quiz question counts
+  let done=0,total=0;
+  C.forEach((cc,i)=>{
+    const pp=pages(cc);
+    total+=pp.length+(numQ(cc)-1); // extra questions
+    if(i<ci){done+=pp.length+(numQ(cc)-1);}
+    else if(i===ci){
+      done+=pi;
+      if(p==='quiz')done+=qi;
+    }
+  });
+  const pct=Math.round((done/total)*100);
+  document.getElementById('tbFill').style.width=pct+'%';
+  document.getElementById('tbLabel').textContent=`Concept ${ci+1} of ${C.length}`;
+  document.getElementById('tbConcept').textContent=c.title;
+  document.getElementById('tbPage').textContent={learn:'Learn',do:'Do it now',quiz:'Quiz'}[p];
+  document.getElementById('btnPrev').disabled=ci===0&&pi===0;
+  // Next gating
+  let locked=false;
+  if(p==='do')locked=!doChecks[ci]||!doChecks[ci].every(Boolean);
+  if(p==='quiz')locked=!quizPassed[ci];
+  const isLast=ci===C.length-1&&pi===ps.length-1;
+  document.getElementById('btnNext').disabled=isLast||locked;
+  document.getElementById('btnNext').textContent=isLast?'✓ Done':'Next →';
+  const typeLabel={learn:'Learn',do:'Do it now',quiz:`Quiz · Q${qi+1}/${nq}`}[p];
+  document.getElementById('botLabel').textContent=`Concept ${ci+1} · Page ${pi+1}`;
+  document.getElementById('botSub').textContent=typeLabel;
+}
+
+// ─── INTERACTIONS ────────────────────────────────────────────────────
+function toggleStep(i){
+  if(!doChecks[ci])doChecks[ci]=new Array(C[ci].do.steps.length).fill(false);
+  doChecks[ci][i]=!doChecks[ci][i];
+  save();render();
+}
+
+function answerQuiz(i){
+  if(quizPassed[ci])return;
+  const qi=quizQ[ci]||0;
+  if((quizDone[ci]||[])[qi])return; // already passed this question
+  const o=C[ci].quiz.questions[qi].opts[i];
+  quizSel[ci]=i;
+  if(o.c){
+    if(!quizDone[ci])quizDone[ci]=new Array(numQ(C[ci])).fill(false);
+    quizDone[ci][qi]=true;
+    if(quizDone[ci].every(Boolean))quizPassed[ci]=true;
+  }
+  save();render();
+}
+
+function nextQuestion(){
+  const nq=numQ(C[ci]);
+  const qi=(quizQ[ci]||0)+1;
+  if(qi<nq){quizQ[ci]=qi;quizSel[ci]=undefined;}
+  save();render();
+}
+
+function nav(dir){
+  const ps=pages(C[ci]);
+  if(dir===1){if(pi<ps.length-1){pi++;}else if(ci<C.length-1){ci++;pi=0;}}
+  else{if(pi>0){pi--;}else if(ci>0){ci--;pi=pages(C[ci]).length-1;}}
+  save();render();
+}
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight'&&!document.getElementById('btnNext').disabled)nav(1);
+  if(e.key==='ArrowLeft'&&!document.getElementById('btnPrev').disabled)nav(-1);
+});
+
+load();render();
+</script>
+</body>
+</html>
